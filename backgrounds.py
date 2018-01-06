@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Mar 12 09:30:36 2017
-
-@author: johnm
-"""
-
 import os
 from PIL import Image
 from shutil import copy
@@ -37,24 +31,15 @@ def makeDestDir(dest):
 def getBaseFileNames(dir):
     return [name.split('.')[0] for name in os.listdir(dir)]
 
-def filesToMoveDictionary(src_files, dest_files, src_dir):
-    #create a dictionary with files in source with a minimum size and not in destination
-    MINIMUM = 300000
-    dict_files = dict()
-    for file in src_files:
-        src_name = os.path.join(src_dir,file)
-        src_size = os.path.getsize(src_name)
-        if src_size >= MINIMUM and file not in dest_files:
-            dict_files[file] = src_size
-    return dict_files
-
 def cleanFolder(dest):
     files_to_delete = list()
     count = 0
     deleted = 0
     for file in os.listdir(dest):
         try:
+            # Using PIL module to get the pic dimensions
             im = Image.open(os.path.join(dest,file))
+            # this checks that the pic is in landscape and has horizonal size greater than 1000 pixels
             if (im.size[0] < im.size[1]) or im.size[0] < 1000:
                 count += 1
                 files_to_delete.append(file)
@@ -66,17 +51,20 @@ def cleanFolder(dest):
             os.remove(os.path.join(dest,file))
             deleted += 1
         except:
+            # sometimes a photo is blocked, this let's you know
             print('couldnt delete ',file)
     return deleted
 
 
 if __name__ == "__main__":
     # this only works on Windows
-    # assert os.environ['OS'] == 'Windows_NT'
+    assert os.environ['OS'] == 'Windows_NT'
+    
     # need the source and destination directories; make destination if necessary
     source = getSourceDir()
     dest = getDestDir()
     makeDestDir(dest)
+    
     # create lists of files in source and destination directories
     src_file_names = os.listdir(source)
     dest_file_names = getBaseFileNames(dest)
@@ -85,7 +73,7 @@ if __name__ == "__main__":
     screened = [file for file in src_file_names if os.path.getsize(os.path.join(source,file)) > 500000]
     no_duplicates = [file for file in screened if file not in dest_file_names]
 
-    # copy file names in dictionary from source to destination
+    # copy file names from source to destination
     print(str(len(no_duplicates)) + ' items moved')
     for f in no_duplicates:
         src = source + '\\' + f
